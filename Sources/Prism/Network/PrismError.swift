@@ -7,34 +7,34 @@
 
 import Foundation
 
-enum PrismError: Error {
-    
-    enum NetworkErrorReason {
-        
+public enum PrismError: Error {
+
+    public enum NetworkErrorReason {
+
         /// 유효하지 않은 URL 문자열로 인해 URL 생성에 실패한 경우
         case invalidURL
-        
+
         /// URLSession 네트워크 요청 자체가 실패한 경우 (인터넷 끊김, 타임아웃 등)
         case urlSessionFailed(Error)
-        
+
         /// response가 HTTPURLResponse로 다운 캐스팅 실패한 경우
         case invalidResponse
-        
+
         /// 서버가 실패 응답을 반환한 경우 (4xx 또는 5xx)
         /// - code: HTTP 상태 코드
         /// - message: 서버가 전달한 에러 메시지 (Optional)
         case serverError(code: HTTPErrorCode)
-        
+
         /// 데이터가 비어있는 경우
         case emptyData
-        
+
     }
-    
-    enum ProcessingErrorReason {
+
+    public enum ProcessingErrorReason {
         case processingFailed
     }
-    
-    
+
+
     case networkError(reason: NetworkErrorReason)
     case processingError(reason: ProcessingErrorReason)
     case unknown(Error? = nil)
@@ -45,7 +45,7 @@ enum PrismError: Error {
 
 extension PrismError.NetworkErrorReason: LocalizedError {
     
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .invalidURL:
             return "invalidURL) 예시: URLComponents(string: baseURL) 생성 실패."
@@ -60,7 +60,7 @@ extension PrismError.NetworkErrorReason: LocalizedError {
         }
     }
     
-    enum HTTPErrorCode: Int, LocalizedError {
+    public enum HTTPErrorCode: Int, LocalizedError {
         /// 인증 실패 (ex. 토큰 없음, 만료, 잘못된 자격 증명 등)
         case unauthorized = 401
         
@@ -77,7 +77,7 @@ extension PrismError.NetworkErrorReason: LocalizedError {
             self = HTTPErrorCode(rawValue: rawValue) ?? .unknown
         }
         
-        var errorDescription: String? {
+        public var errorDescription: String? {
             let code = self.rawValue
             switch self {
             case .unauthorized:

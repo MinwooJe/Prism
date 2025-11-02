@@ -7,7 +7,7 @@
 
 import UIKit
 
-actor ImageCache {
+public actor ImageCache {
 
     private let memoryCache: NSCache<NSString, UIImage> = {
         let cache = NSCache<NSString, UIImage>()
@@ -16,11 +16,11 @@ actor ImageCache {
         return cache
     }()
     
-    static let shared = ImageCache()
+    public static let shared = ImageCache()
     
-    init() { }
+    public init() { }
 
-    func retrieve(forKey key: String) async -> UIImage? {
+    public func retrieve(forKey key: String) async -> UIImage? {
         return memoryCache.object(forKey: key as NSString)
     }
 
@@ -34,12 +34,12 @@ actor ImageCache {
     /// - 메모리 저장은 거의 실패하지 않음
     /// - 디스크 저장 실패해도 메모리 캐시는 동작
     /// - Fire-and-forget 전략: 저장 실패를 치명적 오류로 간주하지 않음
-    func store(_ image: UIImage, forKey key: String) async {
+    public func store(_ image: UIImage, forKey key: String) async {
         let cost = Int(image.size.width * image.size.height * 4)
         memoryCache.setObject(image, forKey: key as NSString, cost: cost)
     }
 
-    func remove(forKey key: String) async {
+    public func remove(forKey key: String) async {
         memoryCache.removeObject(forKey: key as NSString)
     }
 

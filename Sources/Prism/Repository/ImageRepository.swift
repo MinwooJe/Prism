@@ -15,12 +15,12 @@ fileprivate extension AsyncStream.Continuation {
     }
 }
 
-final class ImageRepository: @unchecked Sendable {
+public final class ImageRepository: @unchecked Sendable {
     
     private let imageDownloader: ImageDownloader
     private let imageCache: ImageCache
     
-    init(
+    public init(
         imageDownloader: ImageDownloader = ImageDownloader(),
         imageCache: ImageCache
     ) {
@@ -31,7 +31,7 @@ final class ImageRepository: @unchecked Sendable {
     /// ImageLoadState의 AsyncStream을 즉시 반환합니다.
     ///
     /// 에러는 Stream 내부 Task에서 발생하므로 throws function이 아닙니다.
-    func fetchImage(from url: URL?) -> AsyncStream<ImageLoadingState> {
+    public func fetchImage(from url: URL?) -> AsyncStream<ImageLoadingState> {
         AsyncStream { continuation in
             Task { @Sendable in
                 continuation.yield(.empty)

@@ -8,12 +8,12 @@
 import Foundation
 import os
 
-final class ImageDownloader {
+public final class ImageDownloader {
     
     private let urlSession: URLSession
     private let jsonDecoder: JSONDecoder
     
-    init(
+    public init(
         urlSession: URLSession = .shared,
         jsonDecoder: JSONDecoder = JSONDecoder()
     ) {
@@ -21,7 +21,7 @@ final class ImageDownloader {
         self.jsonDecoder = jsonDecoder
     }
     
-    func fetchImage(from url: URL?) async throws(PrismError) -> Data {
+    public func fetchImage(from url: URL?) async throws(PrismError) -> Data {
         guard let url else {
             throw .networkError(reason: .invalidURL)
         }

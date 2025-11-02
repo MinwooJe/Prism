@@ -7,7 +7,7 @@
 
 import UIKit
 
-enum ImageLoadingState: Sendable {
+public enum ImageLoadingState: Sendable {
     case empty
     case loading
     case loaded(image: UIImage)
