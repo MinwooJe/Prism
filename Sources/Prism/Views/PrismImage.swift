@@ -7,34 +7,33 @@
 
 import SwiftUI
 
-struct PrismImage: View {
+struct PrismImage<Content: View>: View {
 
-    private let state: ImageLoadingState
-    private let size: CGSize
+    private let url: URL?
+    private let size: CGSize?
+    private let content: (ImageLoadingState) -> Content
+
+    @State private var state: ImageLoadingState = .loading
 
     init(
-        state: ImageLoadingState,
-        size: CGSize,
-        onAppear: @escaping () -> Void,
+        url: URL?,
+        size: CGSize? = nil,
+        @ViewBuilder content: @escaping (ImageLoadingState) -> Content
     ) {
-        self.state = state
+        self.url = url
         self.size = size
+        self.content = content
     }
 
-    public var body: some View {
+    var body: some View {
         Group {
-            switch state {
-            case .loading:
-                ProgressView()
-            case .success(let image):
-                Image(uiImage: image)
-                    .resizable()
-            case .failed:
-                Image(systemName: "person")
-                    .resizable()
+            if let size {
+                content(state)
+                    .frame(width: size.width, height: size.height)
+            } else {
+                content(state)
             }
         }
-        .frame(width: size.width, height: size.height)
     }
 
 }
