@@ -20,6 +20,8 @@ final class ImageRepository: Sendable {
     private let imageDownloader: ImageDownloader
     private let memoryCache: MemoryCache
 
+    static let shared = ImageRepository()
+
     init(
         imageDownloader: ImageDownloader = ImageDownloader(),
         memoryCache: MemoryCache = MemoryCache.shared
