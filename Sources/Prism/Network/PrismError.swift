@@ -31,6 +31,8 @@ enum PrismError: Error {
     }
 
     enum ProcessingErrorReason {
+
+        /// 인코딩/디코딩 실패한 경우
         case processingFailed
     }
 
