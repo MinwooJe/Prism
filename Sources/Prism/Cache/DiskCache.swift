@@ -51,7 +51,10 @@ actor DiskCache {
         }
 
         guard let data = fileManager.contents(atPath: filePath.path()) else { return nil }
-        let cacheEntry = try decode(CacheEntry.self, from: data)
+        guard let cacheEntry = try? decode(CacheEntry.self, from: data) else {
+            try remove(forKey: url)     // 손상된 파일 제거
+            return nil
+        }
 
         return cacheEntry.data
     }
