@@ -83,7 +83,7 @@ extension ImageRepository {
             return image
         }
 
-        if let cachedData = try? await diskCache.retrieve(forKey: url),
+        if let cachedData = await diskCache.retrieve(forKey: url),
            let image = UIImage(data: cachedData) {
             await memoryCache.store(image, forKey: url)
             return image

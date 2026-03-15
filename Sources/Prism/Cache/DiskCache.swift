@@ -33,7 +33,7 @@ actor DiskCache {
         }
     }
 
-    func retrieve(forKey url: URL) throws(PrismError) -> Data? {
+    func retrieve(forKey url: URL) -> Data? {
         let cacheKey = CacheKey(url: url)
         let filePath = getFilePath(forKey: cacheKey.value)
 
@@ -41,22 +41,24 @@ actor DiskCache {
         guard let attributes = try? fileManager.attributesOfItem(atPath: filePath.path()),
               let createdAt = attributes[.creationDate] as? Date
         else {
-            try remove(forKey: url)
+            try? remove(forKey: url)
             return nil
         }
 
         if Date().timeIntervalSince(createdAt) > ttl {
-            try remove(forKey: url)
+            try? remove(forKey: url)
             return nil
         }
 
         guard let data = fileManager.contents(atPath: filePath.path()) else { return nil }
-        guard let cacheEntry = try? decode(CacheEntry.self, from: data) else {
-            try remove(forKey: url)     // 손상된 파일 제거
+
+        do {
+            let cacheEntry = try decode(CacheEntry.self, from: data)
+            return cacheEntry.data
+        } catch {
+            try? remove(forKey: url)     // 손상된 파일 제거
             return nil
         }
-
-        return cacheEntry.data
     }
 
     func store(_ data: Data, forKey url: URL) throws(PrismError) {
