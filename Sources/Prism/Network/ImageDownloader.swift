@@ -27,8 +27,9 @@ final class ImageDownloader: Sendable {
         do {
             (data, response) = try await urlSession.data(for: request)
         } catch {
-            PrismLogger.network.error("URLSession Failed: \(error)")
-            throw .networkError(reason: .urlSessionFailed(error))
+            let networkError = PrismError.networkError(reason: .urlSessionFailed(error))
+            PrismLogger.network.error("\(networkError)")
+            throw networkError
         }
 
         try validateResponse(data: data, response: response)
