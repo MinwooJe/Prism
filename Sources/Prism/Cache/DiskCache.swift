@@ -1,0 +1,115 @@
+//
+//  DiskCache.swift
+//  Prism
+//
+//  Created by MinwooJe on 3/12/26.
+//
+
+import Foundation
+import os
+
+final class DiskCache {
+    private var directoryURL: URL
+    private let ttl: TimeInterval
+
+    private static let encoder: JSONEncoder = .init()
+    private static let decoder: JSONDecoder = .init()
+    private let fileManager: FileManager
+
+    init(fileManager: FileManager = .default) {
+        self.fileManager = fileManager
+        self.directoryURL = self.fileManager
+            .urls(for: .cachesDirectory, in: .userDomainMask)[0]
+            .appending(path: "Prism", directoryHint: .isDirectory)
+        self.ttl = 7 * 24 * 60 * 60
+
+        prepareDirectory()
+    }
+
+    func retrieve(forKey url: URL) async throws -> Data? {
+        let cacheKey = CacheKey(url: url)
+        let filePath = getFilePath(forKey: cacheKey.value)
+
+        // 메타데이터를 읽을 수 없어 최신성을 보장할 수 없다면 캐시 miss로 처리 및 해당 데이터 제거.
+        guard let attributes = try? fileManager.attributesOfItem(atPath: filePath.path()),
+              let createdAt = attributes[.creationDate] as? Date
+        else {
+            try await remove(forKey: url)
+            return nil
+        }
+
+        if Date().timeIntervalSince(createdAt) > ttl {
+            try await remove(forKey: url)
+            return nil
+        }
+
+        guard let data = fileManager.contents(atPath: filePath.path()) else { return nil }
+        let cacheEntry = try decode(CacheEntry.self, from: data)
+
+        return cacheEntry.data
+    }
+
+    func store(_ data: Data, forKey url: URL) async throws(PrismError) {
+        let cacheKey = CacheKey(url: url)
+        let cacheEntry: CacheEntry = .init(data: data)
+
+        let filePath = getFilePath(forKey: cacheKey.value)
+        let encodedEntry = try encode(cacheEntry)
+
+        let isSuccess = fileManager.createFile(atPath: filePath.path(), contents: encodedEntry)
+
+        guard isSuccess else {
+            throw PrismError.cacheError(
+                reason: .createCacheFileFailed(
+                    path: url,
+                    key: cacheKey.value,
+                    data: data
+                )
+            )
+        }
+    }
+
+    func remove(forKey url: URL) async throws {
+        let cacheKey = CacheKey(url: url)
+        let filePath = getFilePath(forKey: cacheKey.value)
+
+        try fileManager.removeItem(at: filePath)
+    }
+}
+
+extension DiskCache {
+
+    func prepareDirectory() {
+        do {
+            try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+        } catch {
+            let cacheError = PrismError.cacheError(reason: .createDirectoryFailed(url: directoryURL, error: error))
+            PrismLogger.disk.error("\(cacheError)")
+        }
+    }
+
+    func getFilePath(forKey key: String) -> URL {
+        directoryURL.appending(path: key, directoryHint: .notDirectory)
+    }
+
+}
+
+extension DiskCache {
+
+    func encode<T: Encodable>(_ value: T) throws(PrismError) -> Data {
+        do {
+            return try Self.encoder.encode(value)
+        } catch {
+            throw PrismError.processingError(reason: .processingFailed)
+        }
+    }
+
+    func decode<T: Decodable>(_ type: T.Type, from data: Data) throws(PrismError) -> T {
+        do {
+            return try Self.decoder.decode(T.self, from: data)
+        } catch {
+            throw PrismError.processingError(reason: .processingFailed)
+        }
+    }
+
+}
