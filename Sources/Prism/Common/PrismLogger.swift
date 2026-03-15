@@ -14,8 +14,9 @@ enum PrismLogger {
         static let bundleID = Bundle.main.bundleIdentifier ?? ""
 
         static let network = bundleID + "Network"
+        static let disk = bundleID + "Disk"
     }
 
     static let network = Logger(subsystem: Subsystem.network, category: "Network")
-
+    static let disk = Logger(subsystem: Subsystem.disk, category: "Disk")
 }
