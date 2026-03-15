@@ -8,9 +8,11 @@
 import Foundation
 import os
 
-final class DiskCache {
-    private var directoryURL: URL
+actor DiskCache {
+    private let directoryURL: URL
     private let ttl: TimeInterval
+
+    static let shared = DiskCache(fileManager: .default)
 
     private static let encoder: JSONEncoder = .init()
     private static let decoder: JSONDecoder = .init()
@@ -23,10 +25,15 @@ final class DiskCache {
             .appending(path: "Prism", directoryHint: .isDirectory)
         self.ttl = 7 * 24 * 60 * 60
 
-        prepareDirectory()
+        do {
+            try self.fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+        } catch {
+            let cacheError = PrismError.cacheError(reason: .createDirectoryFailed(url: directoryURL, error: error))
+            PrismLogger.disk.error("\(cacheError)")
+        }
     }
 
-    func retrieve(forKey url: URL) async throws -> Data? {
+    func retrieve(forKey url: URL) throws -> Data? {
         let cacheKey = CacheKey(url: url)
         let filePath = getFilePath(forKey: cacheKey.value)
 
@@ -34,12 +41,12 @@ final class DiskCache {
         guard let attributes = try? fileManager.attributesOfItem(atPath: filePath.path()),
               let createdAt = attributes[.creationDate] as? Date
         else {
-            try await remove(forKey: url)
+            try remove(forKey: url)
             return nil
         }
 
         if Date().timeIntervalSince(createdAt) > ttl {
-            try await remove(forKey: url)
+            try remove(forKey: url)
             return nil
         }
 
@@ -49,7 +56,7 @@ final class DiskCache {
         return cacheEntry.data
     }
 
-    func store(_ data: Data, forKey url: URL) async throws(PrismError) {
+    func store(_ data: Data, forKey url: URL) throws(PrismError) {
         let cacheKey = CacheKey(url: url)
         let cacheEntry: CacheEntry = .init(data: data)
 
@@ -69,7 +76,7 @@ final class DiskCache {
         }
     }
 
-    func remove(forKey url: URL) async throws {
+    func remove(forKey url: URL) throws {
         let cacheKey = CacheKey(url: url)
         let filePath = getFilePath(forKey: cacheKey.value)
 
@@ -78,15 +85,6 @@ final class DiskCache {
 }
 
 extension DiskCache {
-
-    func prepareDirectory() {
-        do {
-            try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true)
-        } catch {
-            let cacheError = PrismError.cacheError(reason: .createDirectoryFailed(url: directoryURL, error: error))
-            PrismLogger.disk.error("\(cacheError)")
-        }
-    }
 
     func getFilePath(forKey key: String) -> URL {
         directoryURL.appending(path: key, directoryHint: .notDirectory)
