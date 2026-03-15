@@ -36,8 +36,18 @@ enum PrismError: Error {
         case processingFailed
     }
 
+    enum CacheErrorReason {
+
+        /// 해당 경로에 디렉토리 생성을 실패한 경우
+        case createDirectoryFailed(url: URL, error: any Error)
+
+        /// 해당 경로에 캐시 파일 생성을 실패한 경우
+        case createCacheFileFailed(path: URL, key: String, data: Data)
+    }
+
     case networkError(reason: NetworkErrorReason)
     case processingError(reason: ProcessingErrorReason)
+    case cacheError(reason: CacheErrorReason)
     case unknown(Error? = nil)
 
 }
