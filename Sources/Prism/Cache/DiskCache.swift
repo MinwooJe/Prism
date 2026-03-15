@@ -33,7 +33,7 @@ actor DiskCache {
         }
     }
 
-    func retrieve(forKey url: URL) throws -> Data? {
+    func retrieve(forKey url: URL) throws(PrismError) -> Data? {
         let cacheKey = CacheKey(url: url)
         let filePath = getFilePath(forKey: cacheKey.value)
 
@@ -66,21 +66,35 @@ actor DiskCache {
         let isSuccess = fileManager.createFile(atPath: filePath.path(), contents: encodedEntry)
 
         guard isSuccess else {
-            throw PrismError.cacheError(
+            let cacheError = PrismError.cacheError(
                 reason: .createCacheFileFailed(
                     path: url,
                     key: cacheKey.value,
                     data: data
                 )
             )
+            PrismLogger.disk.error("\(cacheError)")
+            throw cacheError
         }
     }
 
-    func remove(forKey url: URL) throws {
+    func remove(forKey url: URL) throws(PrismError) {
         let cacheKey = CacheKey(url: url)
         let filePath = getFilePath(forKey: cacheKey.value)
 
-        try fileManager.removeItem(at: filePath)
+        do {
+            try fileManager.removeItem(at: filePath)
+        } catch {
+            let cacheError = PrismError.cacheError(
+                reason: .removeCacheFileFailed(
+                    path: url,
+                    key: cacheKey.value,
+                    error: error
+                )
+            )
+            PrismLogger.disk.error("\(cacheError)")
+            throw cacheError
+        }
     }
 }
 

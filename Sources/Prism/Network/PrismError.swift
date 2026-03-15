@@ -43,6 +43,9 @@ enum PrismError: Error {
 
         /// 해당 경로에 캐시 파일 생성을 실패한 경우
         case createCacheFileFailed(path: URL, key: String, data: Data)
+
+        /// 해당 경로의 캐시 파일 제거를 실패한 경우
+        case removeCacheFileFailed(path: URL, key: String, error: any Error)
     }
 
     case networkError(reason: NetworkErrorReason)
