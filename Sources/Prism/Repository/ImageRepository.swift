@@ -38,7 +38,7 @@ final class ImageRepository: Sendable {
     /// 에러는 Stream 내부 Task에서 발생하므로 throws function이 아닙니다.
     func fetchImage(from url: URL?) -> AsyncStream<ImageLoadingState> {
         AsyncStream { continuation in
-            Task {
+            let task = Task {
                 continuation.yield(.loading)
 
                 guard let url else {
@@ -71,6 +71,10 @@ final class ImageRepository: Sendable {
                 } catch {
                     continuation.yieldAndFinish(.failed(.unknown(error)))
                 }
+            }
+
+            continuation.onTermination = { _ in
+                task.cancel()
             }
         }
     }
