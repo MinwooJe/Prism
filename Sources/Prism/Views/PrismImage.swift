@@ -15,7 +15,7 @@ public struct PrismImage<Content: View>: View {
 
     @State private var state: ImageLoadingState = .loading
 
-    private let imageRepository: ImageRepository = .shared
+    private let imageRepository: ImageService = .shared
 
     public init(
         url: URL?,

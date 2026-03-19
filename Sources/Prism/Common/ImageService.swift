@@ -1,5 +1,5 @@
 //
-//  ImageRepository.swift
+//  ImageService.swift
 //  Prism
 //
 //  Created by MinwooJe on 3/11/26.
@@ -15,7 +15,7 @@ fileprivate extension AsyncStream.Continuation {
     }
 }
 
-public actor ImageRepository: Sendable {
+public actor ImageService: Sendable {
 
     private var inFlightTaskMap = [URL: Task<UIImage, Error>]()
 
@@ -23,7 +23,7 @@ public actor ImageRepository: Sendable {
     private let memoryCache: MemoryCache
     private let diskCache: DiskCache
 
-    public static let shared = ImageRepository()
+    public static let shared = ImageService()
 
     init(
         imageDownloader: ImageDownloader = ImageDownloader(),
