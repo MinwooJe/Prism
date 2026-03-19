@@ -7,9 +7,9 @@
 
 import Foundation
 
-enum PrismError: Error {
+public enum PrismError: Error {
 
-    enum NetworkErrorReason {
+    public enum NetworkErrorReason: Sendable {
 
         /// 유효하지 않은 URL 문자열로 인해 URL 생성에 실패한 경우
         case invalidURL
@@ -30,13 +30,13 @@ enum PrismError: Error {
 
     }
 
-    enum ProcessingErrorReason {
+    public enum ProcessingErrorReason: Sendable {
 
         /// 인코딩/디코딩 실패한 경우
         case processingFailed
     }
 
-    enum CacheErrorReason {
+    public enum CacheErrorReason: Sendable {
 
         /// 해당 경로에 디렉토리 생성을 실패한 경우
         case createDirectoryFailed(url: URL, error: any Error)
@@ -57,7 +57,7 @@ enum PrismError: Error {
 
 extension PrismError.NetworkErrorReason: LocalizedError {
 
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .invalidURL:
             return "invalidURL) 예시: URLComponents(string: baseURL) 생성 실패."
@@ -72,7 +72,7 @@ extension PrismError.NetworkErrorReason: LocalizedError {
         }
     }
 
-    enum HTTPErrorCode: Int, LocalizedError {
+    public enum HTTPErrorCode: Int, LocalizedError {
         /// 인증 실패 (ex. 토큰 없음, 만료, 잘못된 자격 증명 등)
         case unauthorized = 401
 
@@ -89,7 +89,7 @@ extension PrismError.NetworkErrorReason: LocalizedError {
             self = HTTPErrorCode(rawValue: rawValue) ?? .unknown
         }
 
-        var errorDescription: String? {
+        public var errorDescription: String? {
             let code = self.rawValue
             switch self {
             case .unauthorized:

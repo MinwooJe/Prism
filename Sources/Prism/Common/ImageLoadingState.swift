@@ -7,7 +7,7 @@
 
 import UIKit
 
-enum ImageLoadingState: Sendable {
+public enum ImageLoadingState: Sendable {
     case loading
     case success(image: UIImage)
     case failed(PrismError)

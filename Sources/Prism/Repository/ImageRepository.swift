@@ -15,7 +15,7 @@ fileprivate extension AsyncStream.Continuation {
     }
 }
 
-actor ImageRepository: Sendable {
+public actor ImageRepository: Sendable {
 
     private var inFlightTaskMap = [URL: Task<UIImage, Error>]()
 
@@ -23,7 +23,7 @@ actor ImageRepository: Sendable {
     private let memoryCache: MemoryCache
     private let diskCache: DiskCache
 
-    static let shared = ImageRepository()
+    public static let shared = ImageRepository()
 
     init(
         imageDownloader: ImageDownloader = ImageDownloader(),
@@ -38,7 +38,7 @@ actor ImageRepository: Sendable {
     /// ImageLoadState의 AsyncStream을 즉시 반환합니다.
     ///
     /// 에러는 Stream 내부 Task에서 발생하므로 throws function이 아닙니다.
-    func imageStream(from url: URL?) -> AsyncStream<ImageLoadingState> {
+    public func imageStream(from url: URL?) -> AsyncStream<ImageLoadingState> {
         AsyncStream { continuation in
             continuation.yield(.loading)
 

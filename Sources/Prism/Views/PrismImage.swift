@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct PrismImage<Content: View>: View {
+public struct PrismImage<Content: View>: View {
 
     private let url: URL?
     private let size: CGSize?
@@ -17,7 +17,7 @@ struct PrismImage<Content: View>: View {
 
     private let imageRepository: ImageRepository = .shared
 
-    init(
+    public init(
         url: URL?,
         size: CGSize? = nil,
         @ViewBuilder content: @escaping (ImageLoadingState) -> Content
@@ -27,7 +27,7 @@ struct PrismImage<Content: View>: View {
         self.content = content
     }
 
-    var body: some View {
+    public var body: some View {
         Group {
             if let size {
                 content(state)
