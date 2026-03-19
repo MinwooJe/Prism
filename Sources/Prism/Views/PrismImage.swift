@@ -46,7 +46,7 @@ struct PrismImage<Content: View>: View {
 extension PrismImage {
 
     private func fetchImage(from url: URL?) async {
-        for await state in imageRepository.fetchImage(from: url) {
+        for await state in await imageRepository.imageStream(from: url) {
             switch state {
             case .loading:
                 self.state = .loading
