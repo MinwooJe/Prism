@@ -47,7 +47,7 @@ extension ImageDownloader {
             throw .networkError(reason: .invalidResponse)
         }
 
-        guard (200..<400).contains(httpResponse.statusCode) else {
+        guard (200..<300).contains(httpResponse.statusCode) else {
             let statusCode = httpResponse.statusCode
             PrismLogger.network.error(
                 "\(PrismError.NetworkErrorReason.serverError(code: .init(fromRawValue: statusCode))), Code: \(statusCode)"
