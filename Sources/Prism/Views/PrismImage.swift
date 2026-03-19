@@ -47,14 +47,7 @@ extension PrismImage {
 
     private func fetchImage(from url: URL?) async {
         for await state in await imageRepository.imageStream(from: url) {
-            switch state {
-            case .loading:
-                self.state = .loading
-            case .success(let image):
-                self.state = .success(image: image)
-            case .failed(let prismError):
-                self.state = .failed(prismError)
-            }
+            self.state = state
         }
     }
 
