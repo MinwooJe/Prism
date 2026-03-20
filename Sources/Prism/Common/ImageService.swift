@@ -19,14 +19,14 @@ public actor ImageService: Sendable {
 
     private var inFlightTaskMap = [URL: Task<UIImage, Error>]()
 
-    private let imageDownloader: ImageDownloader
+    private let imageDownloader: ImageDownloading
     private let memoryCache: MemoryCache
     private let diskCache: DiskCache
 
     public static let shared = ImageService()
 
     init(
-        imageDownloader: ImageDownloader = ImageDownloader(),
+        imageDownloader: ImageDownloading = ImageDownloader(),
         memoryCache: MemoryCache = MemoryCache.shared,
         diskCache: DiskCache = DiskCache.shared
     ) {

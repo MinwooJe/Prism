@@ -8,7 +8,7 @@
 import Foundation
 import os
 
-final class ImageDownloader: Sendable {
+final class ImageDownloader: ImageDownloading {
 
     private let urlSession: URLSession
 
