@@ -12,13 +12,13 @@ actor DiskCache {
     private let directoryURL: URL
     private let ttl: TimeInterval
 
-    static let shared = DiskCache(fileManager: .default)
+    static let shared = DiskCache()
 
     private static let encoder: JSONEncoder = .init()
     private static let decoder: JSONDecoder = .init()
-    private let fileManager: FileManager
+    private let fileManager: FileManaging
 
-    init(fileManager: FileManager = .default) {
+    init(fileManager: FileManaging = FileManager.default) {
         self.fileManager = fileManager
         self.directoryURL = self.fileManager
             .urls(for: .cachesDirectory, in: .userDomainMask)[0]
@@ -26,7 +26,7 @@ actor DiskCache {
         self.ttl = 7 * 24 * 60 * 60
 
         do {
-            try self.fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+            try self.fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
         } catch {
             let cacheError = PrismError.cacheError(reason: .createDirectoryFailed(url: directoryURL, error: error))
             PrismLogger.disk.error("\(cacheError)")
@@ -68,7 +68,7 @@ actor DiskCache {
         let filePath = getFilePath(forKey: cacheKey.value)
         let encodedEntry = try encode(cacheEntry)
 
-        let isSuccess = fileManager.createFile(atPath: filePath.path(), contents: encodedEntry)
+        let isSuccess = fileManager.createFile(atPath: filePath.path(), contents: encodedEntry, attributes: nil)
 
         guard isSuccess else {
             let cacheError = PrismError.cacheError(
