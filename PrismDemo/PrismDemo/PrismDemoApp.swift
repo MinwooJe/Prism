@@ -11,7 +11,7 @@ import SwiftUI
 struct PrismDemoApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            DemoView()
         }
     }
 }
