@@ -29,7 +29,8 @@ private final class Item {
 /// - 조회(`retrieve`)와 저장(`store`) 모두 O(1) 시간 복잡도로 동작합니다.
 /// - 캐시가 `totalCostLimit`에 도달하면 가장 오래전에 사용된 항목부터 자동으로 제거됩니다.
 /// - cost는 이미지 픽셀 수 × 4바이트(RGBA) 기준으로 산정됩니다.
-actor MemoryCache {
+/// - NSLock을 사용해 Thread-safe를 보장합니다.
+final class MemoryCache: @unchecked Sendable {
     private let totalCostLimit: Int
     private var totalCost = 0
 
@@ -38,6 +39,8 @@ actor MemoryCache {
     // Sentinel Node: 실제 데이터를 담지 않는 더미 노드로 value와 key는 사용되지 않습니다.
     private var head: Item = .init(key: URL(string: "sentinel://head")!, value: .init())
     private var tail: Item = .init(key: URL(string: "sentinel://tail")!, value: .init())
+
+    private let lock = NSLock()
 
     static let shared = MemoryCache()
 
@@ -56,13 +59,15 @@ actor MemoryCache {
     /// - Parameter url: 이미지를 식별하는 URL 키.
     /// - Returns: 캐시된 이미지. 캐시 미스 시 `nil`을 반환합니다.
     func retrieve(forKey url: URL) -> UIImage? {
-        if let item = entries[url] {
-            removeItem(item)
-            insertFirst(item)
-            return item.value
-        }
+        lock.withLock {
+            if let item = entries[url] {
+                removeItem(item)
+                insertFirst(item)
+                return item.value
+            }
 
-        return nil
+            return nil
+        }
     }
 
     /// 이미지를 캐시에 저장합니다.
@@ -75,19 +80,21 @@ actor MemoryCache {
     ///   - image: 캐시할 이미지.
     ///   - url: 이미지를 식별하는 URL 키.
     func store(_ image: UIImage, forKey url: URL) {
-        if let item = entries[url] {
-            removeItem(item)
+        lock.withLock {
+            if let item = entries[url] {
+                removeItem(item)
+            }
+
+            let newItem = Item(key: url, value: image)
+
+            guard newItem.cost <= totalCostLimit else { return }
+
+            while totalCost + newItem.cost > totalCostLimit {
+                guard evictLRU() else { break }
+            }
+
+            insertFirst(newItem)
         }
-
-        let newItem = Item(key: url, value: image)
-
-        guard newItem.cost <= totalCostLimit else { return }
-
-        while totalCost + newItem.cost > totalCostLimit {
-            guard evictLRU() else { break }
-        }
-
-        insertFirst(newItem)
     }
 
     /// 주어진 URL에 해당하는 항목을 캐시에서 제거합니다.
@@ -96,8 +103,10 @@ actor MemoryCache {
     ///
     /// - Parameter url: 제거할 이미지를 식별하는 URL 키.
     func remove(forKey url: URL) {
-        if let item = entries[url] {
-            removeItem(item)
+        lock.withLock {
+            if let item = entries[url] {
+                removeItem(item)
+            }
         }
     }
 

@@ -70,14 +70,14 @@ public actor ImageService: Sendable {
             return try await inFlightTask.value
         }
 
-        let task = Task {
-            if let image = await memoryCache.retrieve(forKey: url) {
-                return image
-            }
+        if let image = memoryCache.retrieve(forKey: url) {
+            return image
+        }
 
+        let task = Task {
             if let cachedData = await diskCache.retrieve(forKey: url),
                let image = UIImage(data: cachedData) {
-                await memoryCache.store(image, forKey: url)
+                memoryCache.store(image, forKey: url)
                 return image
             }
 
@@ -87,7 +87,7 @@ public actor ImageService: Sendable {
                 throw PrismError.processingError(reason: .processingFailed)
             }
 
-            await memoryCache.store(image, forKey: url)
+            memoryCache.store(image, forKey: url)
             try? await diskCache.store(imageData, forKey: url)
 
             return image
