@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import os
 
 public final class ImageDownloader: ImageDownloading {
 

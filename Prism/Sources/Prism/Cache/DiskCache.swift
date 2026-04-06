@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import os
 
 public actor DiskCache: DiskCaching {
     private let directoryURL: URL

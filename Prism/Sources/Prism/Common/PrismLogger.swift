@@ -9,14 +9,8 @@ import Foundation
 import os
 
 enum PrismLogger {
+    private static let subsystem = "com.Prism"
 
-    private enum Subsystem {
-        static let bundleID = Bundle.main.bundleIdentifier ?? ""
-
-        static let network = bundleID + "Network"
-        static let disk = bundleID + "Disk"
-    }
-
-    static let network = Logger(subsystem: Subsystem.network, category: "Network")
-    static let disk = Logger(subsystem: Subsystem.disk, category: "Disk")
+    static let network = Logger(subsystem: subsystem, category: "Network")
+    static let disk = Logger(subsystem: subsystem, category: "Disk")
 }
