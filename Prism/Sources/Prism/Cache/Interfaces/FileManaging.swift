@@ -30,6 +30,17 @@ protocol FileManaging {
     ) -> Bool
 
     func removeItem(at url: URL) throws
+
+    func setAttributes(
+        _ attributes: [FileAttributeKey: Any],
+        ofItemAtPath path: String
+    ) throws
+
+    func contentsOfDirectory(
+        at url: URL,
+        includingPropertiesForKeys keys: [URLResourceKey]?,
+        options mask: FileManager.DirectoryEnumerationOptions
+    ) throws -> [URL]
 }
 
 extension FileManager: FileManaging { }

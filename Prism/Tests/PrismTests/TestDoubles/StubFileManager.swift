@@ -12,6 +12,7 @@ final class StubFileManager: FileManaging {
     struct DataEntry {
         let data: Data
         let creationDate: Date
+        var modificationDate: Date
     }
 
     private(set) var fileStorage = [String: DataEntry]()
@@ -34,8 +35,14 @@ final class StubFileManager: FileManaging {
     }
 
     func attributesOfItem(atPath path: String) throws -> [FileAttributeKey : Any] {
-        let creationDate = fileStorage[path]?.creationDate
-        return [.creationDate: creationDate as Any]
+        guard let entry = fileStorage[path] else {
+            throw NSError(domain: "StubFileManager", code: 1)
+        }
+        return [
+            .creationDate: entry.creationDate,
+            .modificationDate: entry.modificationDate,
+            .size: entry.data.count
+        ]
     }
 
     func createDirectory(
@@ -50,7 +57,8 @@ final class StubFileManager: FileManaging {
 
     func createFile(atPath path: String, contents data: Data?, attributes attr: [FileAttributeKey : Any]?) -> Bool {
         if let data {
-            fileStorage[path] = .init(data: data, creationDate: Date())
+            let now = Date()
+            fileStorage[path] = .init(data: data, creationDate: now, modificationDate: now)
             return true
         }
         return false
@@ -58,6 +66,30 @@ final class StubFileManager: FileManaging {
 
     func removeItem(at url: URL) throws {
         fileStorage.removeValue(forKey: url.path())
+    }
+
+    func setAttributes(
+        _ attributes: [FileAttributeKey: Any],
+        ofItemAtPath path: String
+    ) throws {
+        guard var entry = fileStorage[path] else {
+            throw NSError(domain: "StubFileManager", code: 1)
+        }
+        if let modDate = attributes[.modificationDate] as? Date {
+            entry.modificationDate = modDate
+        }
+        fileStorage[path] = entry
+    }
+
+    func contentsOfDirectory(
+        at url: URL,
+        includingPropertiesForKeys keys: [URLResourceKey]?,
+        options mask: FileManager.DirectoryEnumerationOptions
+    ) throws -> [URL] {
+        let dirPath = url.path()
+        return fileStorage.keys
+            .filter { $0.hasPrefix(dirPath) && $0 != dirPath }
+            .map { URL(filePath: $0) }
     }
 
 }
