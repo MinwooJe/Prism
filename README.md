@@ -13,8 +13,7 @@ SwiftUI의 [AsyncImage](https://developer.apple.com/documentation/swiftui/asynci
 ## 데모
 |`AsyncImage` 사용|`PrismImage` 사용|
 |---|---|
-| ![AsyncImageDemo](Resources/AsyncImageDemo.mp4) | ![PrismImageDemo](Resources/PrismImageDemo.mp4) |
-
+| <video src="https://github.com/user-attachments/assets/c329b930-f0e5-49f4-9bf4-c5f3015fecb8"> | <video src="https://github.com/user-attachments/assets/1d19d238-3e88-497a-aa26-04471aa4e2fa"> |
 
 ---
 
@@ -34,7 +33,6 @@ SwiftUI의 [AsyncImage](https://developer.apple.com/documentation/swiftui/asynci
 
 ## 설치
 Prism은 [Swift Package Manager](https://docs.swift.org/swiftpm/documentation/packagemanagerdocs/)를 통해 설치 가능합니다.  
-
 
 
 ## 사용법
