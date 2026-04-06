@@ -110,6 +110,16 @@ public final class MemoryCache: MemoryCaching, @unchecked Sendable {
         }
     }
 
+    /// 캐시에 저장된 모든 항목을 제거합니다.
+    public func removeAll() {
+        lock.withLock {
+            entries.removeAll()
+            head.next = tail
+            tail.previous = head
+            totalCost = 0
+        }
+    }
+
 }
 
 extension MemoryCache {

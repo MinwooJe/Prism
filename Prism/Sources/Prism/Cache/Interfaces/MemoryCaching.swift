@@ -9,6 +9,7 @@ import UIKit
 
 public protocol MemoryCaching: Sendable {
     func retrieve(forKey url: URL) -> UIImage?
-    func remove(forKey url: URL)
     func store(_ image: UIImage, forKey url: URL)
+    func remove(forKey url: URL)
+    func removeAll()
 }

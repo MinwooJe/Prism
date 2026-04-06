@@ -112,6 +112,29 @@ public actor DiskCache: DiskCaching {
             throw cacheError
         }
     }
+
+    public func removeAll() throws(PrismError) {
+        do {
+            let fileURLs = try fileManager.contentsOfDirectory(
+                at: directoryURL,
+                includingPropertiesForKeys: nil,
+                options: .skipsHiddenFiles
+            )
+            for fileURL in fileURLs {
+                do {
+                    try fileManager.removeItem(at: fileURL)
+                } catch {
+                    PrismLogger.disk.error("캐시 전체 삭제 중 파일 제거 실패: \(error)")
+                }
+            }
+        } catch {
+            let cacheError = PrismError.cacheError(
+                reason: .createDirectoryFailed(url: directoryURL, error: error)
+            )
+            PrismLogger.disk.error("\(cacheError)")
+            throw cacheError
+        }
+    }
 }
 
 extension DiskCache {
