@@ -11,6 +11,8 @@ import os
 actor DiskCache {
     private let directoryURL: URL
     private let ttl: TimeInterval
+    private let maxDiskSize: Int
+    private let maxCount: Int
 
     static let shared = DiskCache()
 
@@ -18,8 +20,14 @@ actor DiskCache {
     private static let decoder: JSONDecoder = .init()
     private let fileManager: FileManaging
 
-    init(fileManager: FileManaging = FileManager.default) {
+    init(
+        fileManager: FileManaging = FileManager.default,
+        maxDiskSize: Int = 100 * 1024 * 1024,
+        maxCount: Int = 200
+    ) {
         self.fileManager = fileManager
+        self.maxDiskSize = maxDiskSize
+        self.maxCount = maxCount
         self.directoryURL = self.fileManager
             .urls(for: .cachesDirectory, in: .userDomainMask)[0]
             .appending(path: "Prism", directoryHint: .isDirectory)
@@ -54,6 +62,7 @@ actor DiskCache {
 
         do {
             let cacheEntry = try decode(CacheEntry.self, from: data)
+            try? fileManager.setAttributes([.modificationDate: Date()], ofItemAtPath: filePath.path())
             return cacheEntry.data
         } catch {
             try? remove(forKey: url)     // 손상된 파일 제거
@@ -81,6 +90,8 @@ actor DiskCache {
             PrismLogger.disk.error("\(cacheError)")
             throw cacheError
         }
+
+        evictIfNeeded()
     }
 
     func remove(forKey url: URL) throws(PrismError) {
@@ -107,6 +118,48 @@ extension DiskCache {
 
     func getFilePath(forKey key: String) -> URL {
         directoryURL.appending(path: key, directoryHint: .notDirectory)
+    }
+
+    private func evictIfNeeded() {
+        do {
+            let fileURLs = try fileManager.contentsOfDirectory(
+                at: directoryURL,
+                includingPropertiesForKeys: [.contentModificationDateKey, .fileSizeKey],
+                options: .skipsHiddenFiles
+            )
+
+            var entries: [(url: URL, modDate: Date, size: Int)] = []
+            var totalSize = 0
+
+            for fileURL in fileURLs {
+                guard let attributes = try? fileManager.attributesOfItem(atPath: fileURL.path()),
+                      let modificationDate = attributes[.modificationDate] as? Date,
+                      let size = attributes[.size] as? Int
+                else { continue }
+                entries.append((url: fileURL, modDate: modificationDate, size: size))
+                totalSize += size
+            }
+
+            guard entries.count > maxCount || totalSize > maxDiskSize else { return }
+
+            entries.sort { $0.modDate < $1.modDate }
+
+            var currentCount = entries.count
+            var currentSize = totalSize
+
+            for entry in entries {
+                guard currentCount > maxCount || currentSize > maxDiskSize else { break }
+                do {
+                    try fileManager.removeItem(at: entry.url)
+                    currentCount -= 1
+                    currentSize -= entry.size
+                } catch {
+                    PrismLogger.disk.error("LRU eviction 실패: \(error)")
+                }
+            }
+        } catch {
+            PrismLogger.disk.error("LRU eviction 디렉토리 탐색 실패: \(error)")
+        }
     }
 
 }
