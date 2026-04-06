@@ -8,20 +8,21 @@
 import Foundation
 import os
 
-actor DiskCache {
+public actor DiskCache: DiskCaching {
     private let directoryURL: URL
-    private let ttl: TimeInterval
-    private let maxDiskSize: Int
-    private let maxCount: Int
+    public var ttl: TimeInterval
+    public var maxDiskSize: Int
+    public var maxCount: Int
 
-    static let shared = DiskCache()
+    public static let shared = DiskCache()
 
     private static let encoder: JSONEncoder = .init()
     private static let decoder: JSONDecoder = .init()
     private let fileManager: FileManaging
 
-    init(
+    public init(
         fileManager: FileManaging = FileManager.default,
+        ttl: TimeInterval = 7 * 24 * 60 * 60,
         maxDiskSize: Int = 100 * 1024 * 1024,
         maxCount: Int = 200
     ) {
@@ -31,7 +32,7 @@ actor DiskCache {
         self.directoryURL = self.fileManager
             .urls(for: .cachesDirectory, in: .userDomainMask)[0]
             .appending(path: "Prism", directoryHint: .isDirectory)
-        self.ttl = 7 * 24 * 60 * 60
+        self.ttl = ttl
 
         do {
             try self.fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
@@ -41,7 +42,7 @@ actor DiskCache {
         }
     }
 
-    func retrieve(forKey url: URL) -> Data? {
+    public func retrieve(forKey url: URL) -> Data? {
         let cacheKey = CacheKey(url: url)
         let filePath = getFilePath(forKey: cacheKey.value)
 
@@ -70,7 +71,7 @@ actor DiskCache {
         }
     }
 
-    func store(_ data: Data, forKey url: URL) throws(PrismError) {
+    public func store(_ data: Data, forKey url: URL) throws(PrismError) {
         let cacheKey = CacheKey(url: url)
         let cacheEntry: CacheEntry = .init(data: data)
 
@@ -94,7 +95,7 @@ actor DiskCache {
         evictIfNeeded()
     }
 
-    func remove(forKey url: URL) throws(PrismError) {
+    public func remove(forKey url: URL) throws(PrismError) {
         let cacheKey = CacheKey(url: url)
         let filePath = getFilePath(forKey: cacheKey.value)
 
@@ -116,7 +117,7 @@ actor DiskCache {
 
 extension DiskCache {
 
-    func getFilePath(forKey key: String) -> URL {
+    private func getFilePath(forKey key: String) -> URL {
         directoryURL.appending(path: key, directoryHint: .notDirectory)
     }
 
@@ -166,7 +167,7 @@ extension DiskCache {
 
 extension DiskCache {
 
-    func encode<T: Encodable>(_ value: T) throws(PrismError) -> Data {
+    private func encode<T: Encodable>(_ value: T) throws(PrismError) -> Data {
         do {
             return try Self.encoder.encode(value)
         } catch {
@@ -174,7 +175,7 @@ extension DiskCache {
         }
     }
 
-    func decode<T: Decodable>(_ type: T.Type, from data: Data) throws(PrismError) -> T {
+    private func decode<T: Decodable>(_ type: T.Type, from data: Data) throws(PrismError) -> T {
         do {
             return try Self.decoder.decode(T.self, from: data)
         } catch {

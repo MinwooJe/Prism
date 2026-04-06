@@ -7,6 +7,6 @@
 
 import Foundation
 
-protocol ImageDownloading: Sendable {
+public protocol ImageDownloading: Sendable {
     func fetchImage(from url: URL) async throws(PrismError) -> Data
 }

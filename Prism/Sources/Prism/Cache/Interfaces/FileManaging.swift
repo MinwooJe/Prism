@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol FileManaging {
+public protocol FileManaging {
     func urls(
         for directory: FileManager.SearchPathDirectory,
         in domainMask: FileManager.SearchPathDomainMask

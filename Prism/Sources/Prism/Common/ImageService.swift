@@ -20,15 +20,15 @@ public actor ImageService: Sendable {
     private var inFlightTaskMap = [URL: Task<UIImage, Error>]()
 
     private let imageDownloader: ImageDownloading
-    private let memoryCache: MemoryCache
-    private let diskCache: DiskCache
+    private let memoryCache: MemoryCaching
+    private let diskCache: DiskCaching
 
     public static let shared = ImageService()
 
     init(
         imageDownloader: ImageDownloading = ImageDownloader(),
-        memoryCache: MemoryCache = MemoryCache.shared,
-        diskCache: DiskCache = DiskCache.shared
+        memoryCache: MemoryCaching = MemoryCache.shared,
+        diskCache: DiskCaching = DiskCache.shared
     ) {
         self.imageDownloader = imageDownloader
         self.memoryCache = memoryCache
@@ -65,7 +65,7 @@ public actor ImageService: Sendable {
         }
     }
 
-    func fetchImage(for url: URL) async throws -> UIImage {
+    public func fetchImage(for url: URL) async throws -> UIImage {
         if let inFlightTask = inFlightTaskMap[url] {
             return try await inFlightTask.value
         }

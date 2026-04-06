@@ -8,7 +8,7 @@
 import CryptoKit
 import Foundation
 
-struct CacheKey: Sendable {
+public struct CacheKey: Sendable {
     let value: String
 
     init(url: URL) {

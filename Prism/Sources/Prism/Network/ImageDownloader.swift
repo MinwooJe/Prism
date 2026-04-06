@@ -8,7 +8,7 @@
 import Foundation
 import os
 
-final class ImageDownloader: ImageDownloading {
+public final class ImageDownloader: ImageDownloading {
 
     private let urlSession: URLSession
 
@@ -18,7 +18,7 @@ final class ImageDownloader: ImageDownloading {
         self.urlSession = urlSession
     }
 
-    func fetchImage(from url: URL) async throws(PrismError) -> Data {
+    public func fetchImage(from url: URL) async throws(PrismError) -> Data {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
 

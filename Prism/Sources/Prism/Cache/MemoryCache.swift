@@ -30,8 +30,8 @@ private final class Item {
 /// - 캐시가 `totalCostLimit`에 도달하면 가장 오래전에 사용된 항목부터 자동으로 제거됩니다.
 /// - cost는 이미지 픽셀 수 × 4바이트(RGBA) 기준으로 산정됩니다.
 /// - NSLock을 사용해 Thread-safe를 보장합니다.
-final class MemoryCache: @unchecked Sendable {
-    private let totalCostLimit: Int
+public final class MemoryCache: MemoryCaching, @unchecked Sendable {
+    public var totalCostLimit: Int
     private var totalCost = 0
 
     private var entries = [URL: Item]()
@@ -42,11 +42,11 @@ final class MemoryCache: @unchecked Sendable {
 
     private let lock = NSLock()
 
-    static let shared = MemoryCache()
+    public static let shared = MemoryCache()
 
     /// - Parameter totalCostLimit: 캐시가 허용하는 최대 메모리 비용 (바이트 단위).
     ///   개별 이미지의 cost가 이 값을 초과하면 저장되지 않습니다.
-    init(totalCostLimit: Int = 50 * 1024 * 1024) {
+    public init(totalCostLimit: Int = 50 * 1024 * 1024) {
         self.totalCostLimit = totalCostLimit
         head.next = tail
         tail.previous = head
@@ -58,7 +58,7 @@ final class MemoryCache: @unchecked Sendable {
     ///
     /// - Parameter url: 이미지를 식별하는 URL 키.
     /// - Returns: 캐시된 이미지. 캐시 미스 시 `nil`을 반환합니다.
-    func retrieve(forKey url: URL) -> UIImage? {
+    public func retrieve(forKey url: URL) -> UIImage? {
         lock.withLock {
             if let item = entries[url] {
                 removeItem(item)
@@ -79,7 +79,7 @@ final class MemoryCache: @unchecked Sendable {
     /// - Parameters:
     ///   - image: 캐시할 이미지.
     ///   - url: 이미지를 식별하는 URL 키.
-    func store(_ image: UIImage, forKey url: URL) {
+    public func store(_ image: UIImage, forKey url: URL) {
         lock.withLock {
             if let item = entries[url] {
                 removeItem(item)
@@ -102,7 +102,7 @@ final class MemoryCache: @unchecked Sendable {
     /// 캐시에 해당 항목이 없으면 아무 동작도 하지 않습니다.
     ///
     /// - Parameter url: 제거할 이미지를 식별하는 URL 키.
-    func remove(forKey url: URL) {
+    public func remove(forKey url: URL) {
         lock.withLock {
             if let item = entries[url] {
                 removeItem(item)

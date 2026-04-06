@@ -15,7 +15,7 @@ public struct PrismImage<Content: View>: View {
 
     @State private var state: ImageLoadingState = .loading
 
-    private let imageRepository: ImageService = .shared
+    private let imageService: ImageService = .shared
 
     public init(
         url: URL?,
@@ -46,7 +46,7 @@ public struct PrismImage<Content: View>: View {
 extension PrismImage {
 
     private func fetchImage(from url: URL?) async {
-        for await state in await imageRepository.imageStream(from: url) {
+        for await state in await imageService.imageStream(from: url) {
             self.state = state
         }
     }

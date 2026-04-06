@@ -7,6 +7,6 @@
 
 import Foundation
 
-struct CacheEntry: Codable {
+public struct CacheEntry: Codable {
     let data: Data
 }
