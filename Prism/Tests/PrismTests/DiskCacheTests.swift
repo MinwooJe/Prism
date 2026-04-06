@@ -89,4 +89,24 @@ struct DiskCacheTests {
         }
     }
 
+    // MARK: - removeAll Tests
+
+    @Test
+    func removeAll_호출후_모든항목이_nil반환() async throws {
+        let sut = DiskCache(fileManager: StubFileManager(), maxDiskSize: .max, maxCount: .max)
+        let urls = (0..<3).map { TestHelpers.makeURL(path: "remove\($0).png") }
+        let data = TestHelpers.makeTestImageData()
+
+        for url in urls {
+            try await sut.store(data, forKey: url)
+        }
+
+        try await sut.removeAll()
+
+        for url in urls {
+            let result = await sut.retrieve(forKey: url)
+            #expect(result == nil)
+        }
+    }
+
 }
